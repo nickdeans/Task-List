@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import Header from './components/Header.js'
 import Tasks from './components/Tasks.js'
 import AddTask from './components/AddTask'
+import Footer from './components/Footer'
+import About from './components/About'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 function App() {
 
@@ -17,7 +20,7 @@ function App() {
           setTasks(tasksFromServer)
       }
 
-    fetchTasks()
+    getTasks()
   }, [])
 
 const fetchTasks = async () => {
@@ -35,11 +38,12 @@ const fetchTask = async (id) => {
 }
 
 const deleteTask = async (id) => {
-  await fetch(`http://localhost:5000/tasks/${id}`) 
-
-  setTasks(tasks.filter((task) => task.id !== id), {
+  const res = await fetch(`http://localhost:5000/tasks/${id}`, {
     method: 'DELETE',
   })
+  res.status === 200
+    ? setTasks(tasks.filter((task) => task.id !== id))
+    : alert('Error Deleting This Task')
 }
 
 const addTask = async (task) => {
@@ -79,15 +83,23 @@ const toggleReminder = async (id) => {
 }
 
   return (
+    <Router>
     <div className="App">
       <Header onAdd={() => setShowAddTask(!showAddTask)} showAdd={showAddTask} />
-      {showAddTask && <AddTask onAdd={addTask}/>}
+      <Route path='/' exact render={(props) => (
+        <>
+           {showAddTask && <AddTask onAdd={addTask}/>}
       {tasks.length > 0 ? (
         <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder}/>
       ) : (
         'No Tasks to Show'
       )}
+        </>
+      )} />
+      <Route path='/about' component={About} />
+      <Footer />
     </div>
+    </Router>
   );
 }
 
